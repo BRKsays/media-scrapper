@@ -19,3 +19,5 @@ ENV NAME World
 # Run app.py when the container launches
 CMD ["python", "app.py"]
 
+# Upgrade pip
+RUN python -m pip install --upgrade pip
