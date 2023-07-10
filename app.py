@@ -1,36 +1,24 @@
-from flask import Flask, request, render_template
-import yt_dlp
+from flask import Flask
 
 app = Flask(__name__)
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
 def index():
-    if request.method == 'POST':
-        url = request.form['url']
-        media_type = request.form['media_type']
-        format = request.form['format']
-        resolution = request.form['resolution']
-
-        if media_type == 'audio':
-            ydl_opts = {
-                'format': f'bestaudio[ext={format}]/best[ext={format}]',
-                'postprocessors': [{
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': format,
-                }],
-            }
-        else:
-            ydl_opts = {
-                'format': f'bestvideo[height<={resolution}]+bestaudio/best[height<={resolution}]',
-            }
-
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
-
-        return 'Download complete!'
-
-    return render_template('index.html')
+    return 'Hello, World!'
 
 if __name__ == '__main__':
-    app.run()
-app.debug = True
+    from os import environ
+    from gunicorn.app.base import BaseApplication
+
+    class Application(BaseApplication):
+        def init(self, parser, opts, args):
+            return {
+                'bind': f"{environ.get('HOST', '127.0.0.1')}:{environ.get('PORT', 8000)}",
+                'workers': 1,
+            }
+
+        def load(self):
+            return app
+
+    Application().run()
+
